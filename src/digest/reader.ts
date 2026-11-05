@@ -46,6 +46,7 @@ export const readNight: ReadNight = (runsDir, night) => {
   const lines = readFileSync(join(runsDir, `${night}.jsonl`), 'utf8').split(/\r?\n/);
   const jobs = new Map<string, DigestRow>();
   let badLines = 0;
+  const counts = { ok: 0, retry: 0, fail: 0 };
 
   for (const line of lines) {
     if (line.trim() === '') continue;
@@ -56,6 +57,7 @@ export const readNight: ReadNight = (runsDir, night) => {
       continue;
     }
 
+    counts[entry.status] += 1;
     const row = jobs.get(entry.job);
     if (row === undefined) {
       jobs.set(entry.job, {
@@ -82,5 +84,6 @@ export const readNight: ReadNight = (runsDir, night) => {
   return {
     rows: [...jobs.values()].sort((left, right) => left.job.localeCompare(right.job)),
     badLines,
+    counts,
   };
 };
