@@ -1,8 +1,9 @@
 ---
 plan: morning-digest
-status: ready
+status: done
 owner: rook
 opened: 2026-10-29
+closed: 2026-11-05
 ---
 
 # Morning digest
@@ -77,3 +78,15 @@ page again with `LANE_MARKER` unset (the banner reads "no marker set") and uploa
 link. Move this plan to `docs/plans/done/` with its issue list.
 
 Done when: the preview link no longer shows the lane marker.
+
+## Issues
+
+| # | Issue | Blocked by | Worker | Closed |
+|---|-------|-----------|--------|--------|
+| 1 | Run log reader | — | GitHub Copilot · model not reported · standard effort | 2026-11-05 |
+| 2 | Digest page: GET /digest/:night | #1 | GitHub Copilot · model not reported · standard effort | 2026-11-05 |
+| 3 | Digest JSON: GET /api/digest/:night | #1 | GitHub Copilot · model not reported · standard effort | 2026-11-05 |
+| 4 | Board links to nightly digests | #1; final link verification also needs #2 | GitHub Copilot · model not reported · standard effort | 2026-11-05 |
+| 5 | Digest route tests | #1/#2/#3 | GitHub Copilot · model not reported · standard effort | 2026-11-05 |
+| 6 | Publish digest preview for review | #2/#3/#4/#5 | GitHub Copilot · model not reported · standard effort | 2026-11-05 |
+| 7 | Remove lane marker and archive plan | #6 | GitHub Copilot · model not reported · standard effort | 2026-11-05 |
