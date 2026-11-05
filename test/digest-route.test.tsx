@@ -64,9 +64,38 @@ describe('digest page', () => {
     expect(response.status).toBe(200);
     expect(html).toContain('nothing ran');
   });
+
+  it('renders valid rows when the night file contains a malformed line', async () => {
+    writeNight(
+      '2026-10-28',
+      '{malformed line}\n{"at":"2026-10-28T01:00:00+01:00","job":"alpha/ok","status":"ok","owner":"rook"}',
+    );
+
+    const response = await app().request('/digest/2026-10-28');
+    const html = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(html).toContain('<table');
+    expect(html).toContain('alpha/ok');
+  });
 });
 
 describe('digest JSON', () => {
+  it('returns 404 when the night file is missing', async () => {
+    const response = await app().request('/api/digest/2026-10-29');
+
+    expect(response.status).toBe(404);
+  });
+
+  it('returns an empty array for an empty night file', async () => {
+    writeNight('2026-10-28', '');
+
+    const response = await app().request('/api/digest/2026-10-28');
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual([]);
+  });
+
   it('returns rows in the same job order as the digest page', async () => {
     writeNight(
       '2026-10-28',
@@ -91,5 +120,29 @@ describe('digest JSON', () => {
     expect(jsonResponse.status).toBe(200);
     expect(rows.map((row) => row.job)).toEqual(pageJobs);
     expect(rows.map((row) => row.job)).toEqual(['alpha/retry', 'beta/fail', 'zeta/ok']);
+  });
+
+  it('returns valid parsed rows when the night file contains a malformed line', async () => {
+    writeNight(
+      '2026-10-28',
+      '{malformed line}\n{"at":"2026-10-28T01:00:00+01:00","job":"alpha/ok","status":"ok","owner":"rook"}',
+    );
+
+    const response = await app().request('/api/digest/2026-10-28');
+    const rows = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(rows).toEqual([
+      {
+        job: 'alpha/ok',
+        owner: 'rook',
+        runs: 1,
+        retries: 0,
+        lastStatus: 'ok',
+        lastError: null,
+        firstTime: '2026-10-28T01:00:00+01:00',
+        lastTime: '2026-10-28T01:00:00+01:00',
+      },
+    ]);
   });
 });
