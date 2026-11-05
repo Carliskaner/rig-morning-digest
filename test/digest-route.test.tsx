@@ -65,3 +65,31 @@ describe('digest page', () => {
     expect(html).toContain('nothing ran');
   });
 });
+
+describe('digest JSON', () => {
+  it('returns rows in the same job order as the digest page', async () => {
+    writeNight(
+      '2026-10-28',
+      [
+        { at: '2026-10-28T01:00:00+01:00', job: 'zeta/ok', status: 'ok', owner: null },
+        { at: '2026-10-28T01:00:00+01:00', job: 'beta/fail', status: 'fail', owner: 'rook' },
+        { at: '2026-10-28T01:00:00+01:00', job: 'alpha/retry', status: 'retry', owner: 'rook' },
+      ].map((entry) => JSON.stringify(entry)).join('\n'),
+    );
+
+    const application = app();
+    const [jsonResponse, pageResponse] = await Promise.all([
+      application.request('/api/digest/2026-10-28'),
+      application.request('/digest/2026-10-28'),
+    ]);
+    const rows = (await jsonResponse.json()) as { job: string }[];
+    const html = await pageResponse.text();
+    const pageJobs = [...html.matchAll(/<tr(?: class="[^"]*")?><td>(.*?)<\/td>/g)].map(
+      ([, job]) => job,
+    );
+
+    expect(jsonResponse.status).toBe(200);
+    expect(rows.map((row) => row.job)).toEqual(pageJobs);
+    expect(rows.map((row) => row.job)).toEqual(['alpha/retry', 'beta/fail', 'zeta/ok']);
+  });
+});

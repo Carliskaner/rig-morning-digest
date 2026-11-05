@@ -20,6 +20,20 @@ export function createApp(config: RigConfig = loadConfig()) {
     ),
   );
 
+  app.get('/api/digest/:night', (c) => {
+    let digest;
+    try {
+      digest = readNight(config.runsDir, c.req.param('night'));
+    } catch (error) {
+      if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
+        return c.notFound();
+      }
+      throw error;
+    }
+
+    return c.json(digest.rows);
+  });
+
   app.get('/digest/:night', (c) => {
     let digest;
     try {
